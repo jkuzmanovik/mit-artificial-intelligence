@@ -31,9 +31,7 @@ ANSWER_1 = '2'
 # Problem 2.1: Warm-Up Stretch
 
 def cube(x):
-    if(x >0):
-        return x^3
-    raise  Exception("Can't construct cube with negative lengths")
+        return x * x * x
 
 def factorial(x):
     if(x<0):
@@ -46,16 +44,16 @@ def factorial(x):
 
 
 def count_pattern(pattern, lst):
-    length = len(pattern)
-    counter = 0
-    for i in range(0,len(lst)-length):
-        equal = True 
-        for j in range(length):
-            if pattern[j] != lst[i+j]:
-                equal=False
-        if(equal):
-            counter+=1
-    print(counter)
+    p_len = len(pattern)
+    l_len = len(lst)
+    count = 0
+    if p_len > l_len:
+        return 0
+    else:
+        for i in range(0, l_len - p_len + 1):
+            if lst[i : i + p_len] == pattern:
+                count += 1
+    return count
             
 
  
@@ -65,21 +63,25 @@ def count_pattern(pattern, lst):
 # Problem 2.2: Expression depth
 
 def depth(expr,dlabocina=1):
-    m = dlabocina 
-    for i in expr:
-        if(isinstance(i,(tuple))):
-            returned  = depth(i,dlabocina+1)
-            m = max(m,returned)
-    return m 
-
+    max_depth = 0
+    if isinstance(expr, (list, tuple)):
+        for val in expr:
+            d = depth(val)
+            max_depth = d if d > max_depth else max_depth
+        return max_depth + 1
+    else:
+        return 0
 
 
 
 # Problem 2.3: Tree indexing
 
 def tree_ref(tree, index):
-    raise NotImplementedError
-
+    if not isinstance(tree, (list, tuple)): raise Exception("tree_ref: wrong argument")
+    subtree = tree
+    for i in index:
+        subtree = subtree[i]
+    return subtree
 
 # Section 3: Symbolic algebra
 
