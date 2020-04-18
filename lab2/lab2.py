@@ -1,3 +1,4 @@
+import operator
 # Fall 2012 6.034 Lab 2: Search
 #
 # Your answers for the true and false questions will be in the following form.  
@@ -78,22 +79,81 @@ def bfs(graph, start, goal):
 ## Once you have completed the breadth-first search,
 ## this part should be very simple to complete.
 def dfs(graph, start, goal):
-    raise NotImplementedError
-
+    #The way i impelemented is disgusting but i don't know very much python.The next algorithm i will try to solve more cleanly
+    #same for the bfs
+    #i was bored to change queue to stack
+    queue = []
+    queue.append(start)
+    seen = []
+    seen.append(start)
+    parent = {}
+    found = False
+    while queue:
+        explore = queue[len(queue)-1]
+        del queue[len(queue)-1]
+        path = []
+        neighbours = graph.get_connected_nodes(explore)
+        for node in neighbours:
+            if(node == goal):
+                parent[goal] = explore
+                seen.append(node)
+                found = True
+                queue = []
+                break
+            elif node not in seen:
+                parent[node] = explore
+                queue.append(node)
+                seen.append(node)
+    newPath = []
+    newPath.append(start)
+    if(found):
+        now = goal
+        while(now!=start):
+            path.append(now)
+            now = parent[now]
+        path.append(start)
+        newPath = path[::-1]
+    return newPath
 
 ## Now we're going to add some heuristics into the search.  
 ## Remember that hill-climbing is a modified version of depth-first search.
 ## Search direction should be towards lower heuristic values to the goal.
+
 def hill_climbing(graph, start, goal):
-    raise NotImplementedError
+    visited, agenda = set(), [(start,[start])]
+    while agenda:
+        (node, path) = agenda.pop()
+        visited.add(node)
+        if node == goal:
+            return path
+        nodes = sorted(graph.get_connected_nodes(node), key=(lambda x: graph.get_heuristic(x,goal)), reverse=True)
+        for n in nodes:
+            if not n in visited:
+                agenda.append((n, path + [n]))
+
 
 ## Now we're going to implement beam search, a variation on BFS
 ## that caps the amount of memory used to store paths.  Remember,
 ## we maintain only k candidate paths of length n in our agenda at any time.
 ## The k top candidates are to be determined using the 
 ## graph get_heuristic function, with lower values being better values.
+
 def beam_search(graph, start, goal, beam_width):
-    raise NotImplementedError
+    current_level = [(start,[start])]
+    next_level = []
+    while current_level:
+        (node, path) = current_level.pop()
+        if node == goal:
+            return path
+        nodes = graph.get_connected_nodes(node)
+        for n in nodes:
+            if not filter(lambda x: x[0]== n, next_level) and not n in path:
+                next_level.append((n,path + [n]))
+        if not current_level:
+            next_level = sorted(next_level, key=(lambda x: graph.get_heuristic(x[0],goal)))[0:beam_width]
+            current_level = next_level
+            next_level = []
+    return []
 
 ## Now we're going to try optimal search.  The previous searches haven't
 ## used edge distances in the calculation.
@@ -101,14 +161,50 @@ def beam_search(graph, start, goal, beam_width):
 ## This function takes in a graph and a list of node names, and returns
 ## the sum of edge lengths along the path -- the total distance in the path.
 def path_length(graph, node_names):
-    raise NotImplementedError
+    if(len(node_names) == 1):
+        return 0
+    length = 0
+    i = len(node_names) - 1
+    while(i != 0):
+        path = graph.get_edge(node_names[i-1],node_names[i]).length
+        length+=path
+        i-=1
+    return length 
+
+
+    
+
 
 
 def branch_and_bound(graph, start, goal):
-    raise NotImplementedError
+    agenda = [(start,[start],0)]
+    while agenda:
+        (node,path,length) = agenda.pop()
+        if node==goal:
+            return path
+        nodes = graph.get_connected_nodes(node)
+        for n in nodes:
+            if n not in path:
+                agenda.append((n,path + [n],path_length(graph,path + [n])))
+        agenda = sorted(agenda,key = lambda n: n[2],reverse = True)
+    return []
+
 
 def a_star(graph, start, goal):
-    raise NotImplementedError
+    visited = []
+    agenda = [(start,[start],0)]
+    while agenda:
+        (node,path,length) = agenda.pop()
+        if node==goal:
+            return path
+        nodes = graph.get_connected_nodes(node)
+        for n in nodes:
+            if n not in visited:
+                visited.append(n)
+                agenda.append((n,path + [n],path_length(graph,path + [n])))
+        agenda = sorted(agenda,key = lambda n: n[2] + graph.get_heuristic(n[0],goal),reverse = True)
+    return []
+
 
 
 ## It's useful to determine if a graph has a consistent and admissible
@@ -117,11 +213,35 @@ def a_star(graph, start, goal):
 ## consistent, but not admissible?
 
 def is_admissible(graph, goal):
-    raise NotImplementedError
+    visited,agenda = set(),[(goal,[goal],0)]
+    while agenda:
+        (node,path,length) = agenda.pop()
+        if graph.get_heuristic(node,goal) > length:
+            return False
+        visited.add(node)
+        nodes = graph.get_connected_nodes(node)
+        for n in nodes:
+            if not n in visited:
+                agenda.append((n,path+[n],path_length(graph,path + [n])))
+        agenda = sorted(agenda,key=lambda n: n[2],reverse = True)
+    return True
+        
 
 def is_consistent(graph, goal):
-    raise NotImplementedError
+    visited,agenda = set(),[goal]
+    while agenda:
+        node = agenda.pop()
+        visited.add(node)
+        nodes = graph.get_connected_nodes(node)
+        for n in nodes:
+            if not n in visited:
+                agenda.append(n)
+                if(abs(graph.get_heuristic(node,goal) - graph.get_heuristic(n,goal)) > path_length(graph,[n,node])):
+                    return False
+    return True
 
-HOW_MANY_HOURS_THIS_PSET_TOOK = ''
-WHAT_I_FOUND_INTERESTING = ''
-WHAT_I_FOUND_BORING = ''
+
+
+HOW_MANY_HOURS_THIS_PSET_TOOK = '10'
+WHAT_I_FOUND_INTERESTING = 'The heruistic ones'
+WHAT_I_FOUND_BORING = 'dfs and bfs i think that everyone that is learning this subject should know basic algorithms'
