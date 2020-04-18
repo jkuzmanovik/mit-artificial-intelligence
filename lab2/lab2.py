@@ -7,28 +7,28 @@
 
 # 1: True or false - Hill Climbing search is guaranteed to find a solution
 #    if there is a solution
-ANSWER1 = None
+ANSWER1 = False
 
 # 2: True or false - Best-first search will give an optimal search result
 #    (shortest path length).
 #    (If you don't know what we mean by best-first search, refer to
 #     http://courses.csail.mit.edu/6.034f/ai3/ch4.pdf (page 13 of the pdf).)
-ANSWER2 = None
+ANSWER2 = False
 
 # 3: True or false - Best-first search and hill climbing make use of
 #    heuristic values of nodes.
-ANSWER3 = None
+ANSWER3 = True
 
 # 4: True or false - A* uses an extended-nodes set.
-ANSWER4 = None
+ANSWER4 = True
 
 # 5: True or false - Breadth first search is guaranteed to return a path
 #    with the shortest number of nodes.
-ANSWER5 = None
+ANSWER5 = True
 
 # 6: True or false - The regular branch and bound uses heuristic values
 #    to speed up the search for an optimal path.
-ANSWER6 = None
+ANSWER6 = False
 
 # Import the Graph data structure from 'search.py'
 # Refer to search.py for documentation
@@ -40,7 +40,40 @@ from search import Graph
 # The online tester will not test them.
 
 def bfs(graph, start, goal):
-    raise NotImplementedError
+    queue = []
+    queue.append(start)
+    seen = []
+    seen.append(start)
+    parent = {}
+    found = False
+    while queue:
+        explore = queue[0]
+        del queue[0]
+        path = []
+        neighbours = graph.get_connected_nodes(explore)
+        for node in neighbours:
+            if(node == goal):
+                parent[goal] = explore
+                seen.append(node)
+                found = True
+                queue = []
+                break
+            elif node not in seen:
+                parent[node] = explore
+                queue.append(node)
+                seen.append(node)
+    newPath = []
+    newPath.append(start)
+    if(found):
+        now = goal
+        while(now!=start):
+            path.append(now)
+            now = parent[now]
+        path.append(start)
+        newPath = path[::-1]
+    return newPath
+    
+    
 
 ## Once you have completed the breadth-first search,
 ## this part should be very simple to complete.
